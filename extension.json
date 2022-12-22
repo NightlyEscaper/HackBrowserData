@@ -1,0 +1,23 @@
+{
+    "name": "HackBrowserData",
+    "version": "0.0.0",
+    "command_name": "hackbrowserdata",
+    "extension_author": "@moonD4rk",
+    "original_author": "@moonD4rk",
+    "repo_url": "https://github.com/NightlyEscaper/HackBrowserData",
+    "help": "Decrypt passwords/cookies/history/bookmarks from the browser.",
+    "entrypoint": "run",
+    "files": [
+        {
+            "os": "windows",
+            "arch": "amd64",
+            "path": "HackBrowserData.x64.dll"
+        },
+        {
+            "os": "windows",
+            "arch": "386",
+            "path": "HackBrowserData.x86.dll"
+        }
+    ]
+}
+

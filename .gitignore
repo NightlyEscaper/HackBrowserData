@@ -174,7 +174,6 @@ cmd/server
 
 # config file
 config.toml
-*.json
 Bookmarks
 Login Data
 Cookies
@@ -191,6 +190,8 @@ results/
 
 hack-browser-data
 !/cmd/hack-browser-data
-!/browingdata/history
-!/browingdata/history/history.go
-!/browingdata/history/history_test.go
+
+# Tempory build file
+*.a
+*.dll
+compiled/

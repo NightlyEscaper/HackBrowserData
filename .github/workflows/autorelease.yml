@@ -1,0 +1,115 @@
+name: 'Release'
+
+on:
+  schedule:
+    - cron:  '0 5 * * 0'
+    # scheduled at 05:00 every Sunday
+
+  workflow_dispatch:  # click the button on Github repo!
+
+jobs:
+
+  sync_latest_from_upstream:
+    runs-on: ubuntu-latest
+    name: Sync latest commits from upstream repo
+    outputs:
+      status: ${{ steps.sync.outputs.has_new_commits }}
+      tag:   ${{ steps.tag.outputs.tag || steps.lastesttag.outputs.tag }}
+    steps:
+    # REQUIRED step
+    # Step 1: run a standard checkout action, provided by github
+    - name: Checkout target repo
+      uses: actions/checkout@v2
+      with:
+        # optional: set the branch to checkout,
+        # sync action checks out your 'target_sync_branch' anyway
+        ref:  master
+        # REQUIRED if your upstream repo is private (see wiki)
+        persist-credentials: false
+        fetch-depth: 0
+
+    # REQUIRED step
+    # Step 2: run the sync action
+    - name: Sync upstream changes
+      id: sync
+      uses: aormsby/Fork-Sync-With-Upstream-action@v3.4
+      with:
+        target_sync_branch: master
+        # REQUIRED 'target_repo_token' exactly like this!
+        target_repo_token: ${{ secrets.GITHUB_TOKEN }}
+        upstream_sync_branch: master
+        upstream_sync_repo: moonD4rk/HackBrowserData
+        shallow_since: '1 year ago'
+
+    # Step 3: Publish with tag.
+    - name: Bump version and push tag
+      id: tag
+      if: steps.sync.outputs.has_new_commits == 'true'
+      uses: anothrNick/github-tag-action@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        WITH_V: true
+        DEFAULT_BUMP: patch
+        
+    # Step 4: Get Latest tag
+    - name: 'Get Latest tag'
+      id: lastesttag
+      if: steps.sync.outputs.has_new_commits == 'false'
+      uses: "WyriHaximus/github-action-get-previous-tag@v1"
+      with:
+        fallback: '' # Optional fallback tag to use when no tag can be found
+
+  linux-windows-build:
+    name: MinGW Build
+    needs: [sync_latest_from_upstream]
+    if: ${{ (needs.sync_latest_from_upstream.outputs.status == 'true') || (needs.sync_latest_from_upstream.outputs.tag == '') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+
+    - name: Checkout target repo
+      uses: actions/checkout@v2
+      with:
+        # optional: set the branch to checkout,
+        # sync action checks out your 'target_sync_branch' anyway
+        ref:  master
+        
+    - name: Git Fetch Tags
+      run: git fetch --prune --unshallow --tags -f
+
+    - name: OS Packages 
+      run: |
+        sudo apt-get update --fix-missing && sudo apt-get -y install \
+        git build-essential zlib1g zlib1g-dev wget zip unzip \
+        mingw-w64 binutils-mingw-w64 g++-mingw-w64 gcc-multilib golang-go
+    - name: Minisign
+      run: |
+        MINISIGN_TMP=`mktemp -d`
+        cd $MINISIGN_TMP
+        wget https://github.com/aead/minisign/releases/download/v0.2.0/minisign-linux-amd64.tar.gz
+        tar xvf minisign-linux-amd64.tar.gz
+        mv ./minisign ~/minisign
+    - name: Build Package
+      run: |
+        ls
+        make
+        cat extension.json | jq ".version |= \"${{ needs.sync_latest_from_upstream.outputs.tag || 'v0.0.0' }}\"" > ./compiled/extension.json
+        cp LICENSE ./compiled/LICENSE
+        cd compiled
+        tar -czvf ../hackbrowserdata.tar.gz .
+      
+    - name: Sign Package
+      run: |
+        touch ~/minisign.key && chmod 600 ~/minisign.key
+        echo -e "${{ secrets.MINISIGN_PRIVATE_KEY }}" > ~/minisign.key
+        MANIFEST=$(cat ./compiled/extension.json | base64 -w 0)
+        bash -c "echo \"\" | ~/minisign -s ~/minisign.key -S -m ./hackbrowserdata.tar.gz -t \"$MANIFEST\" -x hackbrowserdata.minisig"
+    - name: "Publish Release"
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: false
+        automatic_release_tag: ${{ needs.sync_latest_from_upstream.outputs.tag || 'v0.0.0' }}
+        files: |
+          ./hackbrowserdata.minisig
+          ./hackbrowserdata.tar.gz

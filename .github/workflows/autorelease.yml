@@ -93,7 +93,7 @@ jobs:
       run: |
         ls
         make
-        cat extension.json | jq ".version |= \"${{ needs.sync_latest_from_upstream.outputs.tag || 'v0.0.0' }}\"" > ./compiled/extension.json
+        cat alias.json | jq ".version |= \"${{ needs.sync_latest_from_upstream.outputs.tag || 'v0.0.0' }}\"" > ./compiled/alias.json
         cp LICENSE ./compiled/LICENSE
         cd compiled
         tar -czvf ../hackbrowserdata.tar.gz .
@@ -102,7 +102,7 @@ jobs:
       run: |
         touch ~/minisign.key && chmod 600 ~/minisign.key
         echo -e "${{ secrets.MINISIGN_PRIVATE_KEY }}" > ~/minisign.key
-        MANIFEST=$(cat ./compiled/extension.json | base64 -w 0)
+        MANIFEST=$(cat ./compiled/alias.json | base64 -w 0)
         bash -c "echo \"\" | ~/minisign -s ~/minisign.key -S -m ./hackbrowserdata.tar.gz -t \"$MANIFEST\" -x hackbrowserdata.minisig"
     - name: "Publish Release"
       uses: "marvinpinto/action-automatic-releases@latest"

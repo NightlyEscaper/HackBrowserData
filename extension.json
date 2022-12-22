@@ -8,6 +8,8 @@
     "help": "Decrypt passwords/cookies/history/bookmarks from the browser.",
     "entrypoint": "run",
     "is_reflective": true,
+    "is_assembly": false,
+    "allow_args": false,
     "files": [
         {
             "os": "windows",

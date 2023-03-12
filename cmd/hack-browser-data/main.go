@@ -61,7 +61,7 @@ func Execute() {
 			}
 
 			for _, b := range browsers {
-				data, err := b.BrowsingData()
+				data, err := b.BrowsingData(true)
 				if err != nil {
 					log.Error(err)
 				}

@@ -1,7 +1,7 @@
 package main
 import "C"
 import (
-	"hack-browser-data/cmd"
+	"cmd/hack-browser-data"
 )
 
 //export run

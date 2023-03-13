@@ -1,3 +1,4 @@
+#include "ReflectiveLoader.h"
 #include "dllmain.h"
 #include <windows.h>
 #include <stdio.h>

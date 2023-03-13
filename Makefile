@@ -5,10 +5,10 @@ GO_BUILD_FLAGS := -a -v --gcflags=-trimpath=$GOPATH -asmflags=-trimpath=$GOPATH 
 default:
 	mkdir compiled
 # Build x86
-	CC=$(CXX_X86) CGO_ENABLED=1 GOOS=windows GOARCH=386 go build $(GO_BUILD_FLAGS) -o HackBrowserData.x86.a .
+	CC=$(CXX_X86) CGO_ENABLED=1 GOOS=windows GOARCH=386 go build $(GO_BUILD_FLAGS) -o HackBrowserData.x86.a
 	$(CXX_X86) dllmain.def HackBrowserData.x86.a -shared -lwinmm -lws2_32 -o compiled/HackBrowserData.x86.dll
 # Build x64
-	CC=$(CXX_X64) CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build $(GO_BUILD_FLAGS) -o HackBrowserData.x64.a .
+	CC=$(CXX_X64) CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build $(GO_BUILD_FLAGS) -o HackBrowserData.x64.a
 	$(CXX_X64) dllmain.def HackBrowserData.x64.a -shared -lwinmm -lws2_32 -o compiled/HackBrowserData.x64.dll
 
 clean:

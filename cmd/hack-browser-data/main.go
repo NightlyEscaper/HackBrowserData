@@ -24,7 +24,6 @@ func main() {
 	Execute()
 }
 
-//export Execute
 func Execute() {
 	app := &cli.App{
 		Name:      "bc",

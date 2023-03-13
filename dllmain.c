@@ -1,4 +1,4 @@
-#include "_cgo_export.h"
+#include "dllmain.h"
 #include <windows.h>
 #include <stdio.h>
 #define DLL_QUERY_HMODULE 6

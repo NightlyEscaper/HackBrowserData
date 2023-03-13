@@ -1,4 +1,5 @@
 package main
+import "C"
 
 import (
 	"os"
@@ -23,7 +24,7 @@ var (
 func main() {
 	Execute()
 }
-
+//export Execute
 func Execute() {
 	app := &cli.App{
 		Name:      "bc",

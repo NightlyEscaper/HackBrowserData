@@ -1,5 +1,7 @@
 package main
 
+import "C"
+
 import (
 	"os"
 
@@ -21,6 +23,11 @@ var (
 )
 
 func main() {
+	Execute()
+}
+
+//export run
+func run() {
 	Execute()
 }
 

